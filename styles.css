@@ -1,0 +1,377 @@
+/* --- Base Styles & Variables --- */
+:root {
+    --dark-bg: #0a0a0a;
+    --light-bg: #f0f0f0;
+    --dark-text: #e0e0e0;
+    --light-text: #1a1a1a;
+    --primary-neon: #ffae00; /* Neon Orange/Yellow */
+    --secondary-neon: #ff5733; /* Accent Neon */
+    --border-color-dark: #333;
+    --border-color-light: #ccc;
+    --link-hover: #ffd700; /* Brighter Yellow on Hover */
+    --button-bg: var(--primary-neon);
+    --button-text: #000;
+    --button-hover-bg: var(--link-hover);
+    --chat-bot-bg-dark: #181818;
+    --chat-user-bg-dark: #252525;
+    --chat-bot-bg-light: #e8e8e8;
+    --chat-user-bg-light: #d8d8d8;
+    --grid-color-dark: rgba(255, 174, 0, 0.08);
+    --grid-color-light: rgba(0, 0, 0, 0.08);
+    --font-main: 'Courier New', Courier, monospace; /* Retro font */
+}
+
+body {
+    font-family: var(--font-main);
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    position: relative; /* Needed for grid overlay */
+    overflow-x: hidden; /* Prevent horizontal scroll */
+}
+
+body::before { /* Grid Overlay */
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url('assets/grid.svg');
+    background-repeat: repeat;
+    opacity: 0.5; /* Adjust opacity */
+    z-index: -1; /* Behind content */
+    pointer-events: none; /* Allow clicks through */
+    transition: background-image 0.3s ease; /* Smooth transition for theme change */
+}
+
+
+/* --- Theme Modes --- */
+body.dark-mode {
+    background-color: var(--dark-bg);
+    color: var(--dark-text);
+}
+body.dark-mode::before {
+    filter: invert(1) hue-rotate(180deg) brightness(0.3) contrast(2); /* Adjust filter for dark mode grid */
+}
+
+body.light-mode {
+    background-color: var(--light-bg);
+    color: var(--light-text);
+}
+body.light-mode::before {
+     filter: none; /* Default SVG color works for light mode */
+}
+
+
+/* --- Header --- */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 25px;
+    border-bottom: 1px solid var(--border-color-dark); /* Default dark border */
+}
+body.light-mode header {
+    border-bottom-color: var(--border-color-light);
+}
+
+.logo {
+    height: 40px; /* Adjust as needed */
+}
+
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+#theme-toggle-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    padding: 5px;
+    color: var(--primary-neon);
+}
+#theme-toggle-button .fa-sun { display: none; } /* Hide sun by default */
+#theme-toggle-button .fa-moon { display: inline; } /* Show moon by default */
+
+body.light-mode #theme-toggle-button .fa-sun { display: inline; }
+body.light-mode #theme-toggle-button .fa-moon { display: none; }
+
+
+/* --- Action Buttons --- */
+.action-button {
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: var(--font-main);
+    font-weight: bold;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+    font-size: 1rem;
+    white-space: nowrap; /* Prevent button text wrapping */
+}
+
+.action-button:hover {
+    background-color: var(--button-hover-bg);
+}
+
+.action-buttons {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.buy-button {
+    background-color: var(--secondary-neon);
+}
+.buy-button:hover {
+    background-color: var(--primary-neon);
+}
+
+/* --- Main Content & Chatbot --- */
+main {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    position: relative; /* For Easter Egg positioning */
+}
+
+#chatbot-container {
+    width: 100%;
+    max-width: 600px; /* Max width for desktop */
+    margin: 20px auto;
+    border: 1px solid var(--primary-neon);
+    border-radius: 8px;
+    overflow: hidden; /* Keep chat window contained */
+    display: flex;
+    flex-direction: column;
+    height: 60vh; /* Default height */
+    min-height: 400px; /* Minimum height */
+    box-shadow: 0 0 15px rgba(255, 174, 0, 0.3);
+}
+
+body.dark-mode #chatbot-container { background-color: var(--dark-bg); }
+body.light-mode #chatbot-container { background-color: var(--light-bg); }
+
+
+#status-indicator {
+    padding: 8px 15px;
+    font-size: 0.85rem;
+    text-align: center;
+    border-bottom: 1px solid var(--primary-neon);
+    background-color: rgba(255, 174, 0, 0.1);
+    color: var(--primary-neon);
+    font-weight: bold;
+}
+#status-indicator.verified {
+    color: #0f0; /* Green for verified */
+    background-color: rgba(0, 255, 0, 0.1);
+     border-bottom: 1px solid #0f0;
+}
+#status-indicator.denied {
+    color: #f00; /* Red for denied */
+    background-color: rgba(255, 0, 0, 0.1);
+    border-bottom: 1px solid #f00;
+}
+
+
+#chat-window {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.message {
+    padding: 10px 15px;
+    border-radius: 15px;
+    max-width: 80%;
+    word-wrap: break-word;
+    position: relative; /* For potential future elements like timestamps */
+}
+.message p {
+    margin: 0;
+    line-height: 1.4;
+}
+.message img.meme-image {
+    max-width: 100%;
+    border-radius: 8px;
+    margin-top: 10px;
+    border: 1px solid var(--primary-neon);
+}
+
+.bot-message {
+    background-color: var(--chat-bot-bg-dark);
+    align-self: flex-start;
+    border-bottom-left-radius: 0;
+}
+body.light-mode .bot-message { background-color: var(--chat-bot-bg-light); }
+
+.user-message {
+    background-color: var(--chat-user-bg-dark);
+    align-self: flex-end;
+    border-bottom-right-radius: 0;
+    color: var(--primary-neon); /* User text is neon */
+}
+body.light-mode .user-message { background-color: var(--chat-user-bg-light); color: #333; }
+
+
+#input-area {
+    display: flex;
+    border-top: 1px solid var(--primary-neon);
+}
+
+#user-input {
+    flex-grow: 1;
+    padding: 12px 15px;
+    border: none;
+    background-color: transparent;
+    color: inherit; /* Inherit from body */
+    font-family: var(--font-main);
+    font-size: 1rem;
+    outline: none;
+}
+body.dark-mode #user-input { background-color: var(--chat-user-bg-dark); }
+body.light-mode #user-input { background-color: var(--chat-user-bg-light); }
+
+
+#send-button {
+    background-color: var(--primary-neon);
+    border: none;
+    color: var(--button-text);
+    padding: 0 18px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: background-color 0.2s ease;
+}
+#send-button:hover {
+    background-color: var(--link-hover);
+}
+#send-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#message-limit-indicator {
+    font-size: 0.8rem;
+    text-align: center;
+    padding: 5px;
+    opacity: 0.7;
+}
+
+
+/* --- Footer --- */
+footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 30px;
+    border-top: 1px solid var(--border-color-dark); /* Default dark border */
+    font-size: 0.9rem;
+}
+body.light-mode footer {
+    border-top-color: var(--border-color-light);
+}
+
+
+.social-icons {
+    margin-bottom: 15px;
+}
+
+.social-icons a {
+    color: inherit; /* Use body text color */
+    font-size: 1.8rem;
+    margin: 0 10px;
+    transition: color 0.2s ease;
+}
+
+.social-icons a:hover {
+    color: var(--primary-neon);
+}
+
+/* --- Easter Egg --- */
+.easter-egg-trigger {
+    position: absolute;
+    top: 70px; /* Adjust position */
+    right: 15px; /* Adjust position */
+    font-size: 1.5rem;
+    cursor: pointer;
+    user-select: none; /* Prevent text selection */
+    opacity: 0.5;
+    transition: transform 0.2s ease;
+}
+.easter-egg-trigger:hover {
+    transform: scale(1.3);
+    opacity: 1;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 768px) {
+    header {
+        padding: 10px 15px;
+    }
+    .logo {
+        height: 30px;
+    }
+    #chatbot-container {
+        height: 70vh; /* Taller on mobile */
+        max-width: 95%;
+        margin: 10px auto;
+    }
+     .controls {
+        gap: 10px;
+    }
+     .action-button {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+    }
+     #user-input {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+     #send-button {
+         padding: 0 15px;
+     }
+    .social-icons a {
+        font-size: 1.6rem;
+        margin: 0 8px;
+    }
+    footer {
+        padding: 15px;
+        font-size: 0.8rem;
+    }
+    .easter-egg-trigger {
+        top: 65px;
+        right: 10px;
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 480px) {
+     header {
+        flex-direction: column;
+        gap: 10px;
+    }
+    .controls {
+        width: 100%;
+        justify-content: space-between; /* Space out buttons */
+    }
+    #chatbot-container {
+        height: 65vh;
+    }
+    .message {
+        max-width: 90%;
+    }
+}

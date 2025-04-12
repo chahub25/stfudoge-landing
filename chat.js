@@ -4,7 +4,7 @@
 // NOTE: This file relies on the existence of `api/chatProxy.js` and the OPENROUTER_API_KEY set in Vercel.
 
 // --- Configuration (Client-Side Safe Values) ---
-const WALLETCONNECT_PROJECT_ID = 'YOUR_WALLETCONNECT_PROJECT_ID'; // <-- Replace with your ACTUAL WC Project ID!
+const WALLETCONNECT_PROJECT_ID = '9d4b5847e95ec6872d7ee4d791ee2640'; // 
 const TOKEN_CONTRACT_ADDRESS = '0xd8d01A667A8fEeF10077c61018b4F8fA533703eD'; // <-- STFUDoge Token Address
 const CHAIN_ID = 56; // BNB Smart Chain Mainnet
 const CHAIN_RPC_URL = 'https://bsc-dataseed.binance.org/'; // Public BSC RPC

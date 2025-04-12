@@ -1,8 +1,10 @@
-// File: chat.js (Client-Side Logic)
-// Updated: 2025-04-12
+// File: chat.js (Client-Side Logic - Calls /api/chatProxy)
+// Purpose: Handles UI, Wallet Connection, and sends requests to the secure serverless proxy.
+// NOTE: Ensure 'YOUR_WALLETCONNECT_PROJECT_ID' is replaced below.
+// NOTE: This file relies on the existence of `api/chatProxy.js` and the OPENROUTER_API_KEY set in Vercel.
 
 // --- Configuration (Client-Side Safe Values) ---
-const WALLETCONNECT_PROJECT_ID = 'YOUR_WALLETCONNECT_PROJECT_ID'; // <-- Replace with your WC Project ID
+const WALLETCONNECT_PROJECT_ID = 'YOUR_WALLETCONNECT_PROJECT_ID'; // <-- Replace with your ACTUAL WC Project ID!
 const TOKEN_CONTRACT_ADDRESS = '0xd8d01A667A8fEeF10077c61018b4F8fA533703eD'; // <-- STFUDoge Token Address
 const CHAIN_ID = 56; // BNB Smart Chain Mainnet
 const CHAIN_RPC_URL = 'https://bsc-dataseed.binance.org/'; // Public BSC RPC
@@ -71,12 +73,13 @@ function initializeWeb3Modal() {
              addMessageToChat("Error: Wallet libraries failed to load (Ethers). Try refreshing. very frustrating. wow.", "system");
             return;
         }
+         // *** Check if WalletConnect Project ID was replaced ***
          if (!WALLETCONNECT_PROJECT_ID || WALLETCONNECT_PROJECT_ID === 'YOUR_WALLETCONNECT_PROJECT_ID') {
-             console.error("WalletConnect Project ID is missing in chat.js configuration.");
+             console.error("WalletConnect Project ID is missing in chat.js configuration. Replace 'YOUR_WALLETCONNECT_PROJECT_ID'.");
              statusIndicator.textContent = "Wallet Config Error (Project ID)";
              statusIndicator.className = 'denied';
              addMessageToChat("Error: Wallet setup is incomplete (Missing Project ID). Admin needs to fix this. much config fail. wow.", "system");
-            return;
+            return; // Stop initialization if Project ID is missing
         }
 
         console.log("Web3Modal and Ethers libraries seem loaded. Proceeding with init."); // Debug log
@@ -104,7 +107,7 @@ function initializeWeb3Modal() {
                 defaultChain: chains[0],
                 ethersConfig: ethersConfig,
                 chains: chains,
-                projectId: WALLETCONNECT_PROJECT_ID, // Use the constant defined above
+                projectId: WALLETCONNECT_PROJECT_ID, // Use the constant defined above (MUST BE REPLACED)
                 enableAnalytics: false,
                  metadata: {
                     name: 'STFUDoge Chat',
@@ -128,25 +131,25 @@ function initializeWeb3Modal() {
     }, 500); // Wait 500ms for scripts to hopefully load
 }
 
+// (The rest of the functions: connectWallet, checkTokenBalance, initializeChat, setupEventListeners, updateCurrentYear, handleUserInput, getBotResponse, generateMemePlaceholder, addMessageToChat, enableInput, getTodayDateString, getMessageCount, incrementMessageCount, updateMessageLimitIndicator, displayLimitReachedMessage, loadThemePreference, toggleTheme, triggerEasterEgg remain the same as in the previous full file response, including the updated getBotResponse function that calls /api/chatProxy)
+
+
 async function connectWallet() {
     if (!web3Modal) {
         console.error("Web3Modal not initialized or initialization failed.");
         statusIndicator.textContent = "Wallet init failed. Refresh maybe?";
         statusIndicator.className = 'denied';
-        // Attempt re-initialization? Or just inform user.
-        // initializeWeb3Modal(); // Be careful with re-calling this
         return;
     }
     try {
         statusIndicator.textContent = "Connecting wallet...";
         statusIndicator.className = ''; // Reset class
 
-        const modalProvider = await web3Modal.connect(); // Connect wallet using adapter instance
+        const modalProvider = await web3Modal.connect();
         if (!modalProvider) {
              throw new Error("Web3Modal connection returned null provider.");
         }
 
-        // Use the provider from the adapter to create ethers provider
         ethersProvider = new ethers.providers.Web3Provider(modalProvider);
         signer = ethersProvider.getSigner();
         userAddress = await signer.getAddress();
@@ -165,7 +168,7 @@ async function connectWallet() {
         isVerified = false;
         connectWalletButton.textContent = "Connect Wallet";
         connectWalletButton.disabled = false;
-        updateMessageLimitIndicator(); // Re-apply limit if connection failed
+        updateMessageLimitIndicator();
     }
 }
 
@@ -182,15 +185,13 @@ async function checkTokenBalance() {
     try {
         const tokenContract = new ethers.Contract(TOKEN_CONTRACT_ADDRESS, erc20Abi, ethersProvider);
         const balance = await tokenContract.balanceOf(userAddress);
-        // Use fixed-point formatting for better display of small balances if needed
         const balanceFormatted = ethers.utils.formatUnits(balance, TOKEN_DECIMALS);
 
         console.log(`$STFU Balance for ${userAddress}: ${balanceFormatted}`);
 
         if (balance.gt(0)) { // Use BigNumber greater than comparison
             isVerified = true;
-            // Keep balance display concise unless very large/small
-            const displayBalance = parseFloat(balanceFormatted).toFixed(4); // Show 4 decimal places
+            const displayBalance = parseFloat(balanceFormatted).toFixed(4);
             statusIndicator.textContent = `✅ STFUDoge Verified (${displayBalance} $STFU). Unlimited access granted. such wow.`;
             statusIndicator.className = 'verified';
             addMessageToChat("Hah, you actually have coins. Fine, talk. Don't waste my time. much verified. wow.", "bot");
@@ -205,22 +206,20 @@ async function checkTokenBalance() {
         statusIndicator.textContent = "Error checking balance. Network issue?";
         statusIndicator.className = 'denied';
         addMessageToChat("Can't even check balance. Network broken? Or maybe you are? much error. wow.", "bot");
-        isVerified = false; // Assume not verified on error
+        isVerified = false;
     } finally {
          updateMessageLimitIndicator();
     }
 }
 
-// --- Chat Logic ---
 function initializeChat() {
-    // Initial bot message is already in HTML
     conversationHistory.push({ role: "assistant", content: "Grrr. What you want, peasant? Talk fast. Or buy $STFU. such impatience. wow." });
 }
 
 function setupEventListeners() {
     sendButton.addEventListener('click', handleUserInput);
     userInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && !sendButton.disabled) { // Prevent sending while disabled
+        if (e.key === 'Enter' && !sendButton.disabled) {
             handleUserInput();
         }
     });
@@ -239,22 +238,19 @@ function handleUserInput() {
     const messageText = userInput.value.trim();
     if (!messageText) return;
 
-    // Check message limits BEFORE sending
     if (!isVerified) {
         const { count, limitReached } = getMessageCount();
         if (limitReached) {
             displayLimitReachedMessage();
-            return; // Stop processing if limit reached
+            return;
         }
-        // Increment only if message is actually sent
     }
 
     addMessageToChat(messageText, "user");
     userInput.value = '';
-    sendButton.disabled = true; // Disable button while processing
+    sendButton.disabled = true;
     userInput.disabled = true;
 
-    // Increment message count for free users AFTER adding message visually
     if (!isVerified) {
          incrementMessageCount();
          updateMessageLimitIndicator();
@@ -279,45 +275,40 @@ async function getBotResponse(userMessage) {
     Current user status: ${isVerified ? 'VERIFIED $STFU Holder' : 'PEASANT (No $STFU)'}`;
 
     let messagesToSend = [];
-    // Basic context management: add system prompt if conversation is short
     if (conversationHistory.length <= 2) {
          messagesToSend.push({ role: "system", content: systemPrompt });
     }
      messagesToSend = messagesToSend.concat([...conversationHistory]);
 
-    // Limit history length (e.g., last 10 messages + system prompt)
     const historyLimit = 10;
     if (messagesToSend.length > historyLimit + 1) {
         messagesToSend = messagesToSend.slice(-(historyLimit));
-        // Ensure system prompt is kept if it was added
         if(messagesToSend.length > 0 && messagesToSend[0].role !== "system" && conversationHistory.length > 2) {
              messagesToSend.unshift({ role: "system", content: systemPrompt });
         }
     }
 
-
-    const proxyApiUrl = "/api/chatProxy"; // Use the relative path to your serverless function
+    // Calls the secure serverless proxy function
+    const proxyApiUrl = "/api/chatProxy";
     const modelToUse = isVerified ? VERIFIED_USER_MODEL : FREE_USER_MODEL;
 
     try {
-        // The body now contains the model and messages payload
         const requestBody = {
              model: modelToUse,
              messages: messagesToSend,
         };
 
-        const response = await fetch(proxyApiUrl, { // Point to your proxy
+        const response = await fetch(proxyApiUrl, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json', // Only need Content-Type now
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify(requestBody), // Send the model and messages
+            body: JSON.stringify(requestBody),
         });
 
         if (!response.ok) {
             const errorData = await response.json();
             console.error("Proxy/API Error:", errorData);
-            // Use the error message provided by the proxy if available
             throw new Error(`API request failed: ${response.statusText} - ${errorData.error || 'Unknown error via proxy'}`);
         }
 
@@ -333,8 +324,7 @@ async function getBotResponse(userMessage) {
         conversationHistory.push({ role: "assistant", content: botReply });
         addMessageToChat(botReply, "bot");
 
-        // --- Meme Generation Logic (Placeholder) ---
-        if (isVerified && Math.random() < 0.03) { // 3% chance for verified users
+        if (isVerified && Math.random() < 0.03) {
             generateMemePlaceholder(userMessage, botReply);
         }
 
@@ -348,10 +338,8 @@ async function getBotResponse(userMessage) {
 
 function generateMemePlaceholder(userMsg, botReply) {
     console.log("MEME TRIGGERED (Placeholder)");
-    const memePromptSuggestion = `Create a funny/weird meme about: ${userMsg} and ${botReply.substring(0, 50)}...`; // Simple prompt idea
+    const memePromptSuggestion = `Create a funny/weird meme about: ${userMsg} and ${botReply.substring(0, 50)}...`;
     const caption = "Made this for you, genius. much art. wow.";
-
-    // In a real implementation, you'd call an image generation API here (likely via another serverless proxy)
     addMessageToChat(`${caption}\n(Imagine a weird meme here based on: "${memePromptSuggestion}")`, "bot-meme");
 }
 
@@ -360,7 +348,7 @@ function addMessageToChat(text, sender, imageUrl = null) {
     messageElement.classList.add('message', `${sender}-message`);
 
     const textElement = document.createElement('p');
-    textElement.textContent = text; // Use textContent to prevent basic XSS
+    textElement.textContent = text;
     messageElement.appendChild(textElement);
 
      if (imageUrl) {
@@ -372,20 +360,17 @@ function addMessageToChat(text, sender, imageUrl = null) {
     }
 
     chatWindow.appendChild(messageElement);
-    chatWindow.scrollTop = chatWindow.scrollHeight; // Scroll to bottom
+    chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
 function enableInput() {
      sendButton.disabled = false;
      userInput.disabled = false;
      userInput.focus();
-     userInput.placeholder="Type message or STFU..."; // Reset placeholder
+     userInput.placeholder="Type message or STFU...";
 }
 
-// --- Message Limiting ---
 function getTodayDateString() {
-    // Consider user's timezone? For simplicity, using UTC date string.
-    // For local date: new Date().toLocaleDateString('en-CA') might give YYYY-MM-DD
     return new Date().toISOString().split('T')[0];
 }
 
@@ -397,7 +382,6 @@ function getMessageCount() {
     if (lastReset === today) {
         count = parseInt(localStorage.getItem(MESSAGE_COUNT_KEY) || '0', 10);
     } else {
-        // New day, reset
         localStorage.setItem(MESSAGE_COUNT_KEY, '0');
         localStorage.setItem(LAST_RESET_KEY, today);
         count = 0;
@@ -408,7 +392,7 @@ function getMessageCount() {
 }
 
 function incrementMessageCount() {
-    const { count } = getMessageCount(); // Ensures counter is up-to-date
+    const { count } = getMessageCount();
     const newCount = count + 1;
     localStorage.setItem(MESSAGE_COUNT_KEY, newCount.toString());
     console.log(`Message count incremented to: ${newCount}`);
@@ -420,7 +404,7 @@ function updateMessageLimitIndicator() {
         messageLimitIndicator.style.display = 'block';
     } else {
         const { count } = getMessageCount();
-        const remaining = Math.max(0, MAX_FREE_MESSAGES - count); // Ensure non-negative
+        const remaining = Math.max(0, MAX_FREE_MESSAGES - count);
         messageLimitIndicator.textContent = `Messages remaining: ${remaining}`;
          messageLimitIndicator.style.display = 'block';
     }
@@ -437,15 +421,12 @@ function displayLimitReachedMessage() {
     const randomMsg = limitMessages[Math.floor(Math.random() * limitMessages.length)];
     addMessageToChat(randomMsg, "bot");
 
-    // Keep input disabled to prevent further attempts until verified or reset
     userInput.value = '';
     userInput.disabled = true;
     sendButton.disabled = true;
     userInput.placeholder = "Message limit reached...";
 }
 
-
-// --- Theme Toggling ---
 function loadThemePreference() {
     const savedTheme = localStorage.getItem(THEME_KEY);
     if (savedTheme === 'light') {
@@ -453,7 +434,7 @@ function loadThemePreference() {
         document.body.classList.add('light-mode');
     } else {
         document.body.classList.remove('light-mode');
-        document.body.classList.add('dark-mode'); // Default
+        document.body.classList.add('dark-mode');
     }
 }
 
@@ -469,17 +450,14 @@ function toggleTheme() {
     }
 }
 
-// --- Easter Egg ---
 function triggerEasterEgg() {
-    // Simple alert, could be fancier
     alert("much moon! wow!");
     const mainElement = document.querySelector('main');
     mainElement.style.transition = 'background-color 0.5s ease';
     const originalColor = mainElement.style.backgroundColor;
-    mainElement.style.backgroundColor = 'rgba(255, 215, 0, 0.1)'; // Faint gold glow
+    mainElement.style.backgroundColor = 'rgba(255, 215, 0, 0.1)';
     setTimeout(() => {
          mainElement.style.backgroundColor = originalColor;
-         // Remove transition property to prevent interference later
          setTimeout(() => { mainElement.style.transition = ''; }, 100);
     }, 500);
 }

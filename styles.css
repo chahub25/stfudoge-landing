@@ -1,67 +1,111 @@
+/* File: styles.css - Clean Layout (Single Header Logo) */
+/* Purpose: Restore functional layout styling */
+
 /* --- Base Styles & Variables --- */
-:root { /* ... variables remain the same ... */
-    --dark-bg: #0a0a0a; --light-bg: #f0f0f0; --dark-text: #e0e0e0; --light-text: #1a1a1a;
-    --primary-neon: #ffae00; --secondary-neon: #ff5733; --border-color-dark: #333; --border-color-light: #ccc;
-    --link-hover: #ffd700; --button-bg: var(--primary-neon); --button-text: #000; --button-hover-bg: var(--link-hover);
-    --chat-bot-bg-dark: #181818; --chat-user-bg-dark: #252525; --chat-bot-bg-light: #e8e8e8; --chat-user-bg-light: #d8d8d8;
-    --grid-color-dark: rgba(255, 174, 0, 0.08); --grid-color-light: rgba(0, 0, 0, 0.08);
+:root {
+    --dark-bg: #0a0a0a;
+    --light-bg: #f0f0f0;
+    --dark-text: #e0e0e0;
+    --light-text: #1a1a1a;
+    --primary-neon: #ffae00; /* Neon Orange/Yellow */
+    --secondary-neon: #ff5733; /* Accent Neon */
+    --border-color-dark: #333;
+    --border-color-light: #ccc;
+    --link-hover: #ffd700; /* Brighter Yellow on Hover */
+    --button-bg: var(--primary-neon);
+    --button-text: #000;
+    --button-hover-bg: var(--link-hover);
+    --chat-bot-bg-dark: #181818;
+    --chat-user-bg-dark: #252525;
+    --chat-bot-bg-light: #e8e8e8;
+    --chat-user-bg-light: #d8d8d8;
+    --grid-color-dark: rgba(255, 174, 0, 0.08);
+    --grid-color-light: rgba(0, 0, 0, 0.08);
     --font-main: 'Courier New', Courier, monospace;
 }
 
-body { /* ... base body styles remain same ... */
-    font-family: var(--font-main); margin: 0; padding: 0; transition: background-color 0.3s ease, color 0.3s ease;
-    display: flex; flex-direction: column; min-height: 100vh; position: relative; overflow-x: hidden;
+/* --- Body & Structure --- */
+html {
+    box-sizing: border-box;
 }
-body::before { /* ... grid overlay remains same ... */
-    content: ""; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-    background-image: url('assets/grid.svg'); background-repeat: repeat; opacity: 0.5; z-index: -1;
-    pointer-events: none; transition: background-image 0.3s ease;
+*, *:before, *:after {
+    box-sizing: inherit;
 }
-body.dark-mode { /* ... dark mode styles remain same ... */
-    background-color: var(--dark-bg); color: var(--dark-text);
-}
-body.dark-mode::before { filter: invert(1) hue-rotate(180deg) brightness(0.3) contrast(2); }
-body.light-mode { /* ... light mode styles remain same ... */
-    background-color: var(--light-bg); color: var(--light-text);
-}
-body.light-mode::before { filter: none; }
 
+body {
+    font-family: var(--font-main);
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+body::before { /* Grid Overlay */
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image: url('assets/grid.svg');
+    background-repeat: repeat;
+    opacity: 0.5;
+    z-index: -1;
+    pointer-events: none;
+    transition: background-image 0.3s ease;
+}
+
+/* --- Theme Modes --- */
+body.dark-mode {
+    background-color: var(--dark-bg);
+    color: var(--dark-text);
+}
+body.dark-mode::before {
+    filter: invert(1) hue-rotate(180deg) brightness(0.3) contrast(2);
+}
+body.light-mode {
+    background-color: var(--light-bg);
+    color: var(--light-text);
+}
+body.light-mode::before {
+     filter: none;
+}
 
 /* --- Header --- */
 header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 25px;
+    padding: 15px 25px; /* Slightly more vertical padding */
     border-bottom: 1px solid var(--border-color-dark);
-    flex-wrap: wrap; /* Allow wrapping */
-    gap: 15px; /* Gap between items when wrapped */
+    flex-shrink: 0; /* Prevent header from shrinking */
+    flex-wrap: wrap; /* Allow controls to wrap on small screens if needed */
+    gap: 15px; /* Add gap for wrapped items */
 }
 body.light-mode header { border-bottom-color: var(--border-color-light); }
 
 .header-logo-container {
     display: flex;
-    align-items: flex-end; /* Align bottoms of logos */
-    gap: 12px; /* Space between icon and text logo */
+    align-items: center;
 }
 
 .logo { display: block; }
 
 .primary-logo-header {
-    height: 45px; /* Icon logo size */
+    height: 45px; /* Adjust size as needed */
     width: auto;
-}
-.secondary-logo-header {
-    height: 28px; /* Text logo size - adjust for readability */
-    width: auto;
-    margin-bottom: 2px; /* Fine-tune vertical alignment if needed */
 }
 
-.controls { /* ... controls styles remain same ... */
-    display: flex; align-items: center; gap: 15px;
+.controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
 }
-#theme-toggle-button { /* ... theme button styles remain same ... */
-    background: none; border: none; cursor: pointer; font-size: 1.5rem; padding: 5px; color: var(--primary-neon);
+
+#theme-toggle-button {
+    background: none; border: none; cursor: pointer;
+    font-size: 1.5rem; padding: 5px; color: var(--primary-neon);
 }
 #theme-toggle-button .fa-sun { display: none; }
 #theme-toggle-button .fa-moon { display: inline; }
@@ -69,54 +113,167 @@ body.light-mode #theme-toggle-button .fa-sun { display: inline; }
 body.light-mode #theme-toggle-button .fa-moon { display: none; }
 
 
-/* --- Action Buttons --- */
-.action-button { /* ... button styles remain same ... */ }
-.action-buttons { /* ... button container styles remain same ... */ }
-.buy-button { /* ... buy button styles remain same ... */ }
+/* --- Action Buttons (General & Header) --- */
+.action-button {
+    background-color: var(--button-bg); color: var(--button-text);
+    border: none; padding: 10px 20px; border-radius: 5px;
+    cursor: pointer; font-family: var(--font-main); font-weight: bold;
+    text-decoration: none; transition: background-color 0.2s ease;
+    font-size: 1rem; white-space: nowrap;
+}
+.action-button:hover { background-color: var(--button-hover-bg); }
 
-/* --- Main Content & Chatbot --- */
-main { /* ... main styles remain same ... */ }
+/* Specific Buy Button Styles */
+.action-buttons { /* Container for buy button below chat */
+    text-align: center;
+    margin: 30px 0 20px 0;
+    width: 100%; /* Ensure it takes width for centering */
+}
+.buy-button { background-color: var(--secondary-neon); }
+.buy-button:hover { background-color: var(--primary-neon); }
 
-/* Removed .main-logo-section styles */
 
-#chatbot-container { /* ... chatbot container styles remain same ... */ }
-#status-indicator { /* ... status indicator styles remain same ... */ }
-#chat-window { /* ... chat window styles remain same ... */ }
-.message { /* ... message base styles remain same ... */ }
-.bot-message { /* ... bot message styles remain same ... */ }
-.user-message { /* ... user message styles remain same ... */ }
-#input-area { /* ... input area styles remain same ... */ }
-#user-input { /* ... user input styles remain same ... */ }
-#send-button { /* ... send button styles remain same ... */ }
-#message-limit-indicator { /* ... message limit styles remain same ... */ }
+/* --- Main Content --- */
+main {
+    flex-grow: 1; /* Crucial for pushing footer down */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px 20px 20px; /* Add padding */
+    width: 100%; /* Ensure main takes full width */
+    position: relative; /* For Easter Egg positioning */
+}
+
+
+/* --- Chatbot --- */
+#chatbot-container {
+    width: 100%;
+    max-width: 650px;
+    margin: 0 auto 20px auto; /* Center horizontally, add bottom margin */
+    border: 1px solid var(--primary-neon);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    height: 60vh; /* Responsive height */
+    min-height: 400px; /* Minimum reasonable height */
+    box-shadow: 0 0 15px rgba(255, 174, 0, 0.3);
+    flex-shrink: 0; /* Prevent shrinking if content below is large */
+}
+body.dark-mode #chatbot-container { background-color: var(--chat-bot-bg-dark); } /* Darker container BG */
+body.light-mode #chatbot-container { background-color: var(--chat-user-bg-light); } /* Lighter container BG */
+
+
+#status-indicator {
+    padding: 8px 15px; font-size: 0.85rem; text-align: center;
+    border-bottom: 1px solid var(--primary-neon);
+    background-color: rgba(255, 174, 0, 0.1); color: var(--primary-neon);
+    font-weight: bold; min-height: 1.2em; line-height: 1.4;
+    flex-shrink: 0; /* Prevent shrinking */
+}
+#status-indicator.verified { /* Green */
+    color: #0f0; background-color: rgba(0, 255, 0, 0.1); border-bottom: 1px solid #0f0;
+}
+#status-indicator.denied { /* Red */
+    color: #f00; background-color: rgba(255, 0, 0, 0.1); border-bottom: 1px solid #f00;
+}
+
+#chat-window {
+    flex-grow: 1; /* Takes available space in container */
+    overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 12px;
+    background-color: var(--dark-bg); /* Chat window BG */
+}
+body.light-mode #chat-window { background-color: var(--light-bg); }
+
+
+.message {
+    padding: 10px 15px; border-radius: 15px; max-width: 80%;
+    word-wrap: break-word; position: relative; line-height: 1.4;
+}
+.message p { margin: 0; }
+.message img.meme-image { max-width: 100%; border-radius: 8px; margin-top: 10px; border: 1px solid var(--primary-neon); }
+
+.bot-message {
+    background-color: var(--chat-bot-bg-dark); align-self: flex-start; border-bottom-left-radius: 0;
+    color: var(--dark-text); /* Ensure text is visible */
+}
+body.light-mode .bot-message { background-color: var(--chat-bot-bg-light); color: var(--light-text); }
+
+.user-message {
+    background-color: var(--chat-user-bg-dark); align-self: flex-end; border-bottom-right-radius: 0;
+    color: var(--primary-neon);
+}
+body.light-mode .user-message { background-color: var(--chat-user-bg-light); color: var(--secondary-neon); }
+
+
+#input-area {
+    display: flex; border-top: 1px solid var(--primary-neon);
+    flex-shrink: 0; /* Prevent shrinking */
+}
+#user-input {
+    flex-grow: 1; padding: 12px 15px; border: none;
+    background-color: var(--chat-user-bg-dark); /* Match user message bubble */
+    color: inherit; font-family: var(--font-main); font-size: 1rem; outline: none;
+}
+body.light-mode #user-input { background-color: var(--chat-user-bg-light); }
+
+#send-button {
+    background-color: var(--primary-neon); border: none; color: var(--button-text);
+    padding: 0 18px; cursor: pointer; font-size: 1.2rem; transition: background-color 0.2s ease;
+}
+#send-button:hover { background-color: var(--link-hover); }
+#send-button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+#message-limit-indicator {
+    font-size: 0.8rem; text-align: center; padding: 5px 0; /* Padding top/bottom only */
+    opacity: 0.7; flex-shrink: 0;
+    background-color: var(--chat-bot-bg-dark); /* Match bot bubble */
+    border-top: 1px solid var(--border-color-dark);
+}
+body.light-mode #message-limit-indicator { background-color: var(--chat-bot-bg-light); border-top: 1px solid var(--border-color-light); }
+
 
 /* --- Footer --- */
-footer { /* ... footer styles remain same ... */ }
-.social-icons { /* ... social icon styles remain same ... */ }
-.social-icons a { /* ... social icon link styles remain same ... */ }
-.social-icons a:hover { /* ... social icon hover styles remain same ... */ }
+footer {
+    text-align: center; padding: 20px; margin-top: 20px; /* Adjust margin if needed */
+    border-top: 1px solid var(--border-color-dark); font-size: 0.9rem;
+    flex-shrink: 0; /* Prevent shrinking */
+}
+body.light-mode footer { border-top-color: var(--border-color-light); }
+
+.social-icons { margin-bottom: 15px; }
+.social-icons a { color: inherit; font-size: 1.8rem; margin: 0 10px; transition: color 0.2s ease; }
+.social-icons a:hover { color: var(--primary-neon); }
 
 /* --- Easter Egg --- */
-.easter-egg-trigger { /* ... easter egg styles remain same ... */ }
-.easter-egg-trigger:hover { /* ... easter egg hover styles remain same ... */ }
+.easter-egg-trigger {
+    position: absolute; top: 70px; right: 25px; /* Position relative to main */
+    font-size: 1.5rem; cursor: pointer; user-select: none; opacity: 0.5;
+    transition: transform 0.2s ease; z-index: 10;
+}
+.easter-egg-trigger:hover { transform: scale(1.3); opacity: 1; }
 
 /* --- Responsive Design --- */
 @media (max-width: 768px) {
     header { padding: 10px 15px; }
     .primary-logo-header { height: 40px; }
-    .secondary-logo-header { height: 25px; }
-    /* ... other 768px styles remain same ... */
+    main { padding: 20px 15px 15px 15px; }
+    #chatbot-container { height: 65vh; max-width: 95%; }
+    #user-input { font-size: 0.9rem; }
+    .social-icons a { font-size: 1.6rem; margin: 0 8px; }
+    footer { padding: 15px; font-size: 0.8rem; }
+    .easter-egg-trigger { top: 65px; right: 15px; font-size: 1.3rem; }
 }
 
 @media (max-width: 480px) {
-    /* Adjust header for very small screens if logos clash with controls */
-     .header-logo-container {
-         /* Optionally reduce gap or sizes further if needed */
-         gap: 8px;
-     }
-    .primary-logo-header { height: 35px; }
-    .secondary-logo-header { height: 22px; }
-     /* ... other 480px styles remain same ... */
-      header { flex-direction: row; justify-content: space-between; align-items: center; } /* Keep horizontal */
-     .controls { width: auto; }
+     /* Keep header row layout, adjust padding/size */
+     header { padding: 10px; }
+     .primary-logo-header { height: 35px; }
+     .controls { gap: 10px; } /* Reduce gap */
+     .action-button { padding: 8px 12px; font-size: 0.85rem;} /* Slightly smaller buttons */
+     #theme-toggle-button { font-size: 1.3rem; }
+
+     #chatbot-container { height: 70vh; min-height: 350px; }
+     .message { max-width: 90%; }
+     .action-buttons { margin-top: 25px; }
 }

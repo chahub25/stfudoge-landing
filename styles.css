@@ -86,14 +86,14 @@ header {
 body.light-mode header { border-bottom-color: var(--border-color-light); }
 
 .header-logo-container {
-    display: flex;
+    display: flex; /* Keeps structure, even with one logo */
     align-items: center;
 }
 
 .logo { display: block; }
 
 .primary-logo-header {
-    height: 45px; /* Adjust size as needed */
+    height: 45px; /* Single logo size */
     width: auto;
 }
 

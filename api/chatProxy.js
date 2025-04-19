@@ -1,7 +1,5 @@
 // File: api/chatProxy.js
-
-// This is a Vercel Serverless Function.
-// It runs on the server, not in the browser.
+// Purpose: Securely handles OpenRouter API calls using server-side API key.
 
 export default async function handler(request, response) {
     // Only allow POST requests
@@ -28,9 +26,6 @@ export default async function handler(request, response) {
             headers: {
                 'Authorization': `Bearer ${apiKey}`,
                 'Content-Type': 'application/json',
-                // Optional headers recommended by OpenRouter (get URL from request if needed):
-                // 'HTTP-Referer': `${YOUR_SITE_URL}`,
-                // 'X-Title': `${YOUR_SITE_NAME}`,
             },
             body: JSON.stringify(requestBody), // Forward the client's request body
         });
@@ -40,14 +35,12 @@ export default async function handler(request, response) {
 
         if (!openRouterResponse.ok) {
              console.error("OpenRouter API Error:", responseData);
-            // Forward the error status and message from OpenRouter if possible
              return response.status(openRouterResponse.status || 500).json({
                  error: `OpenRouter API error: ${responseData.error?.message || openRouterResponse.statusText}`
              });
         }
 
         // --- Send Success Response Back to Client ---
-        // Forward the successful response from OpenRouter
         return response.status(200).json(responseData);
 
     } catch (error) {

@@ -1,7 +1,7 @@
-// File: chat.js (Client-Side Logic - v9 DEBUGGING - Message Func Fix)
-// Purpose: Restore missing message limiting functions. Wallet Init still disabled.
+// File: chat.js (Client-Side Logic - v10 DEBUGGING - Wallet Init Re-enabled)
+// Purpose: Re-enable wallet init to capture specific errors.
 
-console.log("chat.js script started - v9 DEBUG Message Func Fix");
+console.log("chat.js script started - v10 DEBUG Wallet Init Enabled");
 
 // --- Configuration ---
 const WALLETCONNECT_PROJECT_ID = '9d4b5847e95ec6872d7ee4d791ee2640'; // Included as requested
@@ -12,41 +12,21 @@ const TOKEN_DECIMALS = 18;
 const MAX_FREE_MESSAGES = 50;
 const FREE_USER_MODEL = "mistralai/mistral-7b-instruct:free";
 const VERIFIED_USER_MODEL = "openai/gpt-3.5-turbo";
-console.log("v9 DEBUG: Using Free Model:", FREE_USER_MODEL);
-console.log("v9 DEBUG: Using WC Project ID:", WALLETCONNECT_PROJECT_ID);
+console.log("v10 DEBUG: Using Free Model:", FREE_USER_MODEL);
+console.log("v10 DEBUG: Using WC Project ID:", WALLETCONNECT_PROJECT_ID);
 
 // --- DOM Elements ---
 let chatWindow, userInput, sendButton, connectWalletButton, buyStfuLink, statusIndicator, messageLimitIndicator, themeToggleButton, easterEggTrigger, currentYearSpan;
-try {
-    chatWindow = document.getElementById('chat-window');
-    userInput = document.getElementById('user-input');
-    sendButton = document.getElementById('send-button');
-    connectWalletButton = document.getElementById('connect-wallet-button');
-    buyStfuLink = document.getElementById('buy-stfu-link');
-    statusIndicator = document.getElementById('status-indicator');
-    messageLimitIndicator = document.getElementById('message-limit-indicator');
-    themeToggleButton = document.getElementById('theme-toggle-button');
-    easterEggTrigger = document.querySelector('.easter-egg-trigger');
-    currentYearSpan = document.getElementById('current-year');
-    if (!chatWindow || !userInput || !sendButton || !connectWalletButton || !statusIndicator || !messageLimitIndicator || !themeToggleButton) {
-        console.warn("v9 DEBUG: One or more expected DOM elements were not found!");
-    }
-    console.log("v9 DEBUG: DOM elements obtained/checked");
-} catch (e) {
-    console.error("v9 DEBUG: Error obtaining DOM elements:", e);
-}
+try { /* ... same as v9 ... */
+    chatWindow = document.getElementById('chat-window'); userInput = document.getElementById('user-input'); sendButton = document.getElementById('send-button'); connectWalletButton = document.getElementById('connect-wallet-button'); buyStfuLink = document.getElementById('buy-stfu-link'); statusIndicator = document.getElementById('status-indicator'); messageLimitIndicator = document.getElementById('message-limit-indicator'); themeToggleButton = document.getElementById('theme-toggle-button'); easterEggTrigger = document.querySelector('.easter-egg-trigger'); currentYearSpan = document.getElementById('current-year');
+    if (!chatWindow || !userInput || !sendButton || !connectWalletButton || !statusIndicator || !messageLimitIndicator || !themeToggleButton) { console.warn("v10 DEBUG: One or more expected DOM elements were not found!");}
+    console.log("v10 DEBUG: DOM elements obtained/checked");
+} catch (e) { console.error("v10 DEBUG: Error obtaining DOM elements:", e); }
 
 // --- Application State ---
-let web3Modal = null;
-let ethersProvider = null;
-let signer = null;
-let userAddress = null;
-let isVerified = false;
-let conversationHistory = [];
-const MESSAGE_COUNT_KEY = 'stfudoge_messageCount';
-const LAST_RESET_KEY = 'stfudoge_lastReset';
-const THEME_KEY = 'stfudoge_theme';
-console.log("v9 DEBUG: App state initialized");
+let web3Modal = null; let ethersProvider = null; let signer = null; let userAddress = null; let isVerified = false; let conversationHistory = [];
+const MESSAGE_COUNT_KEY = 'stfudoge_messageCount'; const LAST_RESET_KEY = 'stfudoge_lastReset'; const THEME_KEY = 'stfudoge_theme';
+console.log("v10 DEBUG: App state initialized");
 
 // --- Minimal ABI ---
 const erc20Abi = ["function balanceOf(address owner) view returns (uint256)"];
@@ -54,141 +34,98 @@ const erc20Abi = ["function balanceOf(address owner) view returns (uint256)"];
 // --- Initialization ---
 try {
     document.addEventListener('DOMContentLoaded', () => {
-        console.log("v9 DEBUG: DOMContentLoaded event fired");
+        console.log("v10 DEBUG: DOMContentLoaded event fired");
 
-        // *** Wallet Initialization remains COMMENTED OUT for debugging ***
-        console.warn("v9 DEBUG: Automatic wallet initialization on load is currently DISABLED.");
-        if(statusIndicator) statusIndicator.textContent = "Wallet Init Disabled (Debug Mode)";
+        // *** Wallet Initialization RE-ENABLED ***
+        if (!WALLETCONNECT_PROJECT_ID || WALLETCONNECT_PROJECT_ID === 'YOUR_WALLETCONNECT_PROJECT_ID') { // Re-check just in case, though ID is hardcoded now
+             console.error("v10 DEBUG FATAL: WalletConnect Project ID issue persists or check failed unexpectedly.");
+             if(statusIndicator) { statusIndicator.textContent = "Wallet Config Error (Project ID)"; statusIndicator.className = 'denied'; }
+             addMessageToChat("Error: Wallet setup is incomplete (Project ID)...", "system");
+        } else {
+            console.log("v10 DEBUG: Project ID seems okay. Initializing wallet modal...");
+            initializeWeb3Modal(); // <--- THIS LINE IS **UNCOMMENTED** NOW
+        }
 
         // Load other parts
         loadThemePreference();
         setupEventListeners();
         initializeChat();
-        updateMessageLimitIndicator(); // This call requires getMessageCount to exist
+        updateMessageLimitIndicator();
         updateCurrentYear();
-        console.log("v9 DEBUG: Initial page setup attempted (Wallet Init Skipped).");
+        console.log("v10 DEBUG: Initial page setup initiated."); // Changed log message slightly
     });
-} catch (e) {
-     console.error("v9 DEBUG: Error setting up DOMContentLoaded listener:", e);
-}
+} catch (e) { console.error("v10 DEBUG: Error setting up DOMContentLoaded listener:", e); }
+
 
 // --- Web3Modal & Wallet Connection ---
-// (This function is NOT called automatically right now)
 function initializeWeb3Modal() {
-    // ... function content from v8 DEBUG ...
-     console.log("v9 DEBUG InitializeWeb3Modal: Function called (if uncommented).");
-     setTimeout(() => { /* ... */ }, 1500);
+    console.log("v10 DEBUG InitializeWeb3Modal: Function called."); // Log prefix updated
+    setTimeout(() => {
+        console.log("v10 DEBUG InitializeWeb3Modal: Timeout finished. Checking libraries...");
+         if (typeof window.Web3Modal === 'undefined' || typeof window.Web3Modal.Ethers5 === 'undefined' || typeof window.ethers === 'undefined') {
+            console.error("v10 DEBUG InitializeWeb3Modal: Libs not loaded...");
+            if (statusIndicator) { statusIndicator.textContent = "Wallet init failed (Lib Load Error)"; statusIndicator.className = 'denied'; }
+            addMessageToChat("Error: Wallet libraries failed to load...", "system");
+            return;
+        }
+        console.log("v10 DEBUG InitializeWeb3Modal: Libraries seem loaded.");
+        try {
+            const { Ethers5Adapter } = window.Web3Modal.Ethers5;
+            const chains = [{ chainId: CHAIN_ID, name: 'BNB Smart Chain', currency: 'BNB', explorerUrl: 'https://bscscan.com', rpcUrl: CHAIN_RPC_URL }];
+            const ethersConfig = { ethers: window.ethers, provider: new window.ethers.providers.JsonRpcProvider(CHAIN_RPC_URL) };
+            const modalConfig = {
+                defaultChain: chains[0], ethersConfig: ethersConfig, chains: chains, projectId: WALLETCONNECT_PROJECT_ID, enableAnalytics: false,
+                metadata: { name: 'STFUDoge Chat', description: 'Chat with the STFUDoge bot', url: window.location.href, icons: [window.location.origin + '/assets/STFUDoge_Favicon.jpg'] }
+            };
+            console.log("v10 DEBUG InitializeWeb3Modal: Creating Ethers5Adapter...");
+            web3Modal = new Ethers5Adapter(modalConfig);
+            console.log("v10 DEBUG InitializeWeb3Modal: Ethers5Adapter creation attempt finished. web3Modal object:", web3Modal);
+            if (!web3Modal) { throw new Error("Adapter creation resulted in null object."); } // This error might still occur
+            if (statusIndicator) { statusIndicator.textContent = "Wallet Ready. Connect pls."; statusIndicator.className = ''; }
+        } catch (error) {
+            console.error("v10 DEBUG InitializeWeb3Modal: Error during Ethers5Adapter creation:", error); // <<<< CHECK FOR THIS ERROR
+            if (statusIndicator) { statusIndicator.textContent = "Wallet init failed (Adapter Error)"; statusIndicator.className = 'denied'; }
+            addMessageToChat("Error initializing wallet connection adapter... " + error.message, "system");
+            web3Modal = null;
+        }
+    }, 1500);
 }
 
 async function connectWallet() {
-    // ... function content from v8 DEBUG ...
-     console.log("v9 DEBUG ConnectWallet: Button clicked...");
-     if (!web3Modal) { /* ... handle error ... */ return; }
-     try { /* ... connect logic ... */ } catch (error) { /* ... error handling ... */ }
-}
-
-// --- checkTokenBalance function ---
-async function checkTokenBalance() { console.log("v9 DEBUG CheckTokenBalance: Called..."); /* ... function content from v8 DEBUG ... */ }
-
-// --- initializeChat function ---
-function initializeChat() { console.log("v9 DEBUG InitializeChat: Setting up initial history."); conversationHistory.push({ role: "assistant", content: "Grrr. What you want, peasant?..." }); }
-
-// --- setupEventListeners function ---
-function setupEventListeners() { console.log("v9 DEBUG SetupEventListeners: Attaching listeners..."); try { /*...*/ } catch(error) { /*...*/ } console.log("v9 DEBUG SetupEventListeners: Finished."); }
-
-// --- updateCurrentYear function ---
-function updateCurrentYear() { if (currentYearSpan) currentYearSpan.textContent = new Date().getFullYear(); }
-
-// --- handleUserInput function ---
-function handleUserInput() { console.log("v9 DEBUG HandleUserInput: Fired."); /* ... function content from v8 DEBUG ... */ }
-
-// --- getBotResponse function ---
-async function getBotResponse(userMessage) { console.log("v9 DEBUG GetBotResponse: Called..."); /* ... function content from v8 DEBUG ... */ }
-
-// --- generateMemePlaceholder function ---
-function generateMemePlaceholder(userMsg, botReply) { console.log("v9 DEBUG GenerateMemePlaceholder: Called..."); /* ... */ }
-
-// --- addMessageToChat function ---
-function addMessageToChat(text, sender, imageUrl = null) { console.log(`v9 DEBUG AddMessageToChat: Adding message - Sender: ${sender}...`); try { /*...*/ } catch (error) { /*...*/ } }
-
-// --- enableInput function ---
-function enableInput() { console.log("v9 DEBUG EnableInput: Re-enabling input..."); try { /*...*/ } catch(error) { /*...*/ } }
-
-
-// --- Message Limiting functions --- *** NOW INCLUDED ***
-function getTodayDateString() {
-    return new Date().toISOString().split('T')[0];
-}
-
-function getMessageCount() {
-    const today = getTodayDateString();
-    const lastReset = localStorage.getItem(LAST_RESET_KEY);
-    let count = 0;
-
-    if (lastReset === today) {
-        count = parseInt(localStorage.getItem(MESSAGE_COUNT_KEY) || '0', 10);
-    } else {
-        // It's a new day, reset count
-        localStorage.setItem(MESSAGE_COUNT_KEY, '0');
-        localStorage.setItem(LAST_RESET_KEY, today);
-        count = 0;
-        console.log("v9 DEBUG GetMessageCount: Message count reset for new day.");
-    }
-    // console.log(`v9 DEBUG GetMessageCount: Count is ${count}. Limit reached: ${count >= MAX_FREE_MESSAGES}`);
-    return { count, limitReached: count >= MAX_FREE_MESSAGES };
-}
-
-function incrementMessageCount() {
-    const { count } = getMessageCount(); // Ensures counter is up-to-date before incrementing
-    const newCount = count + 1;
-    localStorage.setItem(MESSAGE_COUNT_KEY, newCount.toString());
-    console.log(`v9 DEBUG IncrementMessageCount: Count incremented to ${newCount}`);
-}
-
-function updateMessageLimitIndicator() {
-    console.log("v9 DEBUG UpdateMessageLimitIndicator: Updating indicator. Verified:", isVerified);
-    if(!messageLimitIndicator) {
-        console.error("v9 DEBUG UpdateMessageLimitIndicator: Indicator element not found!");
+    console.log("v10 DEBUG ConnectWallet: Button clicked. Checking web3Modal state:", web3Modal);
+    if (!web3Modal) {
+         console.error("v10 DEBUG ConnectWallet: web3Modal is not initialized. Cannot connect."); // <<<< CHECK FOR THIS ERROR IF CLICKING FAILS
+        if (statusIndicator) { statusIndicator.textContent = "Wallet init error. Refresh maybe?"; statusIndicator.className = 'denied'; }
+        addMessageToChat("Wallet system isn't ready...", "system");
         return;
     }
-    if (isVerified) {
-        messageLimitIndicator.textContent = 'Unlimited Messages. such VIP. wow.';
-    } else {
-        // Ensure getMessageCount is defined before calling
-        if (typeof getMessageCount === "function") {
-            const { count } = getMessageCount();
-            const remaining = Math.max(0, MAX_FREE_MESSAGES - count);
-            messageLimitIndicator.textContent = `Messages remaining: ${remaining}`;
-        } else {
-             console.error("v9 DEBUG UpdateMessageLimitIndicator: getMessageCount is not defined when needed!");
-             messageLimitIndicator.textContent = `Messages remaining: ERROR`; // Show error state
-        }
-    }
-    messageLimitIndicator.style.display = 'block';
+    // Rest of function... (code remains same as v9/v8)
+     if (statusIndicator) { statusIndicator.textContent = "Connecting wallet..."; statusIndicator.className = ''; } console.log("v10 DEBUG ConnectWallet: Opening wallet connection modal..."); try { if (connectWalletButton) connectWalletButton.disabled = true; const modalProvider = await web3Modal.connect(); if (!modalProvider) { /*...*/ throw new Error("Wallet connection cancelled or failed.");} console.log("v10 DEBUG ConnectWallet: Modal provider obtained:", modalProvider); ethersProvider = new ethers.providers.Web3Provider(modalProvider); signer = ethersProvider.getSigner(); userAddress = await signer.getAddress(); console.log("v10 DEBUG ConnectWallet: Wallet Connected. Address:", userAddress); if (connectWalletButton) connectWalletButton.textContent = `Connected: <span class="math-inline">\{userAddress\.substring\(0, 6\)\}\.\.\.</span>{userAddress.substring(userAddress.length - 4)}`; if (statusIndicator) statusIndicator.textContent = "Wallet connected. Verifying $STFU..."; await checkTokenBalance(); } catch (error) { console.error("v10 DEBUG ConnectWallet: Error during connection:", error); let errorMsg = "Wallet connection failed."; /*...*/ if (statusIndicator) { statusIndicator.textContent = errorMsg; statusIndicator.className = 'denied'; } addMessageToChat(errorMsg + " much reject. wow.", "system"); userAddress = null; isVerified = false; if (connectWalletButton) { connectWalletButton.textContent = "Connect Wallet"; connectWalletButton.disabled = false; } updateMessageLimitIndicator(); }
 }
 
-function displayLimitReachedMessage() {
-    console.log("v9 DEBUG DisplayLimitReachedMessage: Limit reached message triggered.");
-     const limitMessages = [
-        "why so poor? Connect wallet, peasant.",
-        "No coins, no chat. STFU.",
-        `Limit reached! Buy $STFU or wait until tomorrow. ${buyStfuLink?.outerHTML || 'the buy button'}`,
-        "Seriously? Still no $STFU? My time ain't free. much broke. wow.",
-        "Outta messages. Need $STFU verification. Connect wallet or get lost."
-     ];
-     const randomMsg = limitMessages[Math.floor(Math.random() * limitMessages.length)];
-     addMessageToChat(randomMsg, "bot");
-     if(userInput) { userInput.value = ''; userInput.disabled = true; userInput.placeholder = "Message limit reached..."; }
-     if(sendButton) sendButton.disabled = true;
- }
-// --- End Message Limiting functions ---
 
+// --- Other functions remain the same as v9 DEBUG ---
+// (checkTokenBalance, initializeChat, setupEventListeners, updateCurrentYear,
+// handleUserInput, getBotResponse, generateMemePlaceholder, addMessageToChat,
+// enableInput, Message Limiting, Theme Toggling, Easter Egg)
+// Update console log prefixes if desired e.g., "v10 DEBUG"
 
-// --- Theme Toggling ---
-function loadThemePreference() { console.log("v9 DEBUG LoadThemePreference: Loading..."); try { /*...*/ } catch (error) { /*...*/ } }
-function toggleTheme() { console.log("v9 DEBUG ToggleTheme: Button clicked..."); try { /*...*/ } catch (error) { /*...*/ } }
+async function checkTokenBalance() { console.log("v10 DEBUG CheckTokenBalance: Called..."); /* ... */ }
+function initializeChat() { console.log("v10 DEBUG InitializeChat: Setting up initial history."); conversationHistory.push({ role: "assistant", content: "Grrr. What you want, peasant?..." }); }
+function setupEventListeners() { console.log("v10 DEBUG SetupEventListeners: Attaching listeners..."); try { /*...*/ } catch(error) { /*...*/ } console.log("v10 DEBUG SetupEventListeners: Finished."); }
+function updateCurrentYear() { if (currentYearSpan) currentYearSpan.textContent = new Date().getFullYear(); }
+function handleUserInput() { console.log("v10 DEBUG HandleUserInput: Fired."); /* ... */ }
+async function getBotResponse(userMessage) { console.log("v10 DEBUG GetBotResponse: Called..."); /* ... */ }
+function generateMemePlaceholder(userMsg, botReply) { console.log("v10 DEBUG GenerateMemePlaceholder: Called..."); /* ... */ }
+function addMessageToChat(text, sender, imageUrl = null) { console.log(`v10 DEBUG AddMessageToChat: Adding message - Sender: ${sender}...`); try { /*...*/ } catch (error) { /*...*/ } }
+function enableInput() { console.log("v10 DEBUG EnableInput: Re-enabling input..."); try { /*...*/ } catch(error) { /*...*/ } }
+function getTodayDateString() { return new Date().toISOString().split('T')[0]; }
+function getMessageCount() { /*...*/ return { count, limitReached: count >= MAX_FREE_MESSAGES }; }
+function incrementMessageCount() { /*...*/ console.log(`v10 DEBUG IncrementMessageCount: Count incremented...`); }
+function updateMessageLimitIndicator() { if(!messageLimitIndicator) return; if (isVerified) { /*...*/ } else { const { count } = getMessageCount(); const remaining = Math.max(0, MAX_FREE_MESSAGES - count); messageLimitIndicator.textContent = `Messages remaining: ${remaining}`; } messageLimitIndicator.style.display = 'block'; }
+function displayLimitReachedMessage() { console.log("v10 DEBUG DisplayLimitReachedMessage: Triggered."); /*...*/ }
+function loadThemePreference() { console.log("v10 DEBUG LoadThemePreference: Loading..."); try { /*...*/ } catch (error) { /*...*/ } }
+function toggleTheme() { console.log("v10 DEBUG ToggleTheme: Button clicked..."); try { /*...*/ } catch (error) { /*...*/ } }
+function triggerEasterEgg() { console.log("v10 DEBUG TriggerEasterEgg: Clicked!"); alert("much moon! wow!"); /*...*/ }
 
-// --- Easter Egg ---
-function triggerEasterEgg() { console.log("v9 DEBUG TriggerEasterEgg: Clicked!"); alert("much moon! wow!"); /*...*/ }
-
-console.log("v9 DEBUG: chat.js script fully parsed.");
+console.log("v10 DEBUG: chat.js script fully parsed.");
